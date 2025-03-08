@@ -1,0 +1,129 @@
+npm i -g @angular/cli@latest
+ng new my-app
+node -v
+npm -v
+
+Ang 19 and higher
+------------------
+import { Component } from "@angular/core";
+
+@Component(
+    {
+        selector: 'app-header',
+        standalone: true,
+        templateUrl: './header.component.html',
+       
+    })
+export class HeaderComponent{}
+
+Check in angular.json the assets in options
+"assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ]
+Otherwise images won't show
+
+ng g c user
+
+zone.js notifies Angular about user events, expired timers etc.
+a way to update state since ang 2
+
+signals since 16
+
+Example (basic): 
+Check C:\AutoFormation\Angular-Ultimate\LearningCode\02-Essentials\01-starting-project\01-starting-project\src\app\user
+
+Signals are trackable data containers
+input has to do w/signals
+output not really
+
+---
+return this.users.find((user)=>user.id === this.selectedUserId)!;
+
+The ! means you are ensuring angular no null value will be send over.
+
+@Input() name?: string; means it can be null
+or @Input() name: string | undefined; is equivalent
+@Input({required:true}) name!: string; means you ensures angular no undefined
+
+Another idea:
+<app-tasks [name]="selectedUser?.name" />
+
+type User ={id:string,name:string,avatar:string}
+interface User {id:string,name:string,avatar:string}
+
+@for (user of users; track user.id){
+      <li>
+        <app-user [id]="user.id" [avatar]="user.avatar" [name]="user.name" (select)="onSelectUser($event)" [user]="user"/>
+      </li>
+    }
+
+@if (currentSelectedName){
+    <app-userdetail [name]="currentSelectedName"></app-userdetail>
+  }
+  @else {
+    <p id="fallback">Please select a user</p>
+  }
+  
+@If and @for are available from 17
+
+<app-userdetail *ngIf="currentSelectedName; else fallback" [name]="currentSelectedName"></app-userdetail>
+    <ng-template #fallback>
+      <p id="fallback">Please select a user</p>
+    </ng-template>
+
+Don't forget to add NgFor and NgIf in the imports because they are directives
+
+----
+When exporting types into separate files
+
+import { type User } from './user.model'; The type is not mandatory but ok to do it
+
+ngModel directive: "element enhancement" helps: extracting/changing user inputs.
+directives don't have a template.
+
+A Component is a directive w/templates.
+
+<input type="text" id="title" name="title" [(ngModel)]="enteredTitle"/>
+you need to register FormsModule will register NgModel:
+import { Component, Output, EventEmitter } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+@Component({
+  selector: 'app-newtask',
+  standalone: true,
+  imports: [FormsModule],
+  templateUrl: './newtask.component.html',
+  styleUrl: './newtask.component.css'
+})
+export class NewtaskComponent {
+
+Will update property on every keystroke.
+
+----------------------
+onAddNewTask(taskData:INewTaskData){
+    this.tasks.unshift(
+      {
+        id: new Date().getTime().toString(),
+        userId: this.userId,
+        title: taskData.title,
+        summary: taskData.summary,
+        dueDate: taskData.date
+      })
+  }
+unshift is somewhat like push
+
+<app-card>...<app-card> by default the content is not wrapped.
+The answer is: Content Projection
+------
+Pipes: output transformers
+----
+Services
+inject() or constructor
+
+constructor(){
+        const tasks = localStorage.getItem('tasks');
+        if (tasks){
+            this.tasks = JSON.parse(tasks);
+        }
+    }
