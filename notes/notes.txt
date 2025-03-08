@@ -127,3 +127,48 @@ constructor(){
             this.tasks = JSON.parse(tasks);
         }
     }
+	
+------------
+Example (modules-old fashioned):
+C:\AutoFormation\Angular-Ultimate\LearningCode\03-essentials-modules 
+
+angular modules
+backward compability
+current version is like this:
+
+@Component({
+    selector: 'app-root',
+    standalone: true,
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.css',
+    imports: [HeaderComponent, UserComponent, TasksComponent]
+})
+
+Angular modules make components available to each other
+
+AppModule
+AppComponent
+HeaderComponent UserComponent TaskComponent
+							  TaskModule
+<19: Not setting standalone at all would give you a Module-based component.						  
+Therefore, you should check your package.json file to see whether you're using Angular 19+ or not.			
+
+AppModule
+
+import { NgModule } from "@angular/core";
+import { AppComponent } from "./app.component";
+import { HeaderComponent } from "./header/header.component";
+import { UserComponent } from "./user/user.component";
+import { TasksComponent } from "./tasks/tasks.component";
+
+@NgModule({
+    declarations: [AppComponent, ], //declare and register standalone components(and directives) that will work together
+    bootstrap: [AppComponent],
+    imports: [HeaderComponent, UserComponent, TasksComponent]
+})
+export class AppModule{
+
+}
+
+declarations is for non-standalone
+imports is for standalone components		  
