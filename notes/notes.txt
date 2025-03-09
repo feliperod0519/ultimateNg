@@ -172,3 +172,13 @@ export class AppModule{
 
 declarations is for non-standalone
 imports is for standalone components		  
+
+Defining 2 possible types in an example w/ signals
+  resultsDataSignal = signal<{
+                              year: number,
+                              interest: number,
+                              valueEndOfYear: number,
+                              annualInvestment: number,
+                              totalInterest: number,
+                              totalAmountInvested: number,
+                            }[] | undefined>(undefined);

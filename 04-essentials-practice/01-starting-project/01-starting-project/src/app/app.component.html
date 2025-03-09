@@ -1,0 +1,3 @@
+<app-header />
+<app-user-input (calculate)="calculateInvestmentResults($event)" [withSignals]="true" />
+<app-investment-results [results]="resultsData" [resultsSignals]="resultsDataSignal()" />
