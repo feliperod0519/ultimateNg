@@ -1,0 +1,7 @@
+<div class="header">
+  <img class="logo" src="logo.png" alt="Decoded Frontend">
+  <button class="toggle-button" (click)="showUnShow()">
+    {{ showMore() ? 'Collapse' : 'Expand' }} Banner
+  </button>
+</div>
+<app-banner [(expand)]="this.showMore"></app-banner>

@@ -1,0 +1,60 @@
+/* You can add global styles to this file, and also import other style files */
+body {
+    font-family: "Poppins", sans-serif;
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .logo {
+    width: 110px;
+    display: block;
+  }
+  .toggle-button {
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: 2px solid #debd01;
+    background: #f9d50b;
+    cursor: pointer;
+    &:hover {
+      background: #e1c212;
+    }
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #999;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+  }
+  app-banner {
+    border: 1px solid #666;
+    box-sizing: border-box;
+    display: block;
+    box-shadow: 0 3px 1px -2px #0003, 0 2px 2px #00000024, 0 1px 5px #0000001f;
+    border-radius: 10px;
+    padding: 20px;
+    min-width: 350px;
+    max-width: 350px;
+    h1 {
+      margin: 0;
+      color: rgb(9, 85, 161);
+    }
+    .info-toggle {
+      width: 100%;
+      background-color: #fafafa;
+      border-radius: 10px;
+      padding: 10px;
+      border: solid 1px #f4f3f3;
+      cursor: pointer;
+      &:hover {
+        border: solid 1px #eae9e9;
+        background-color: #f4f3f3;
+      }
+    }
+    .more-info {
+      position: relative;
+    }
+  }
