@@ -182,3 +182,25 @@ Defining 2 possible types in an example w/ signals
                               totalInterest: number,
                               totalAmountInvested: number,
                             }[] | undefined>(undefined);
+							
+https://www.youtube.com/watch?v=n1a2eQ0Zyls
+(signals)
+ng new angular-tour-of-heroes
+http://medium.com/@drissi.dalanda8/signals-in-angular-18-a-comprehensive-guide-with-examples-46b4a0c99ddd
+https://blog.angular-university.io/angular-signal-components/
+
+Instead of.
+@Input() book: Book;
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes[book]) {
+      console.log("Book changed: ", 
+         changes.book.currentValue);
+    }
+  }
+We'll be using
+constructor() {
+    effect(() => {
+      console.log("Book changed: ", this.book());
+    });
+  }
