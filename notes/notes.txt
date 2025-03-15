@@ -204,3 +204,421 @@ constructor() {
       console.log("Book changed: ", this.book());
     });
   }
+  
+model()
+A Model input is essentially a writeable input!
+
+Model inputs allow us to specify a two-way data binding contract between the parent component and the child component.
+
+Banana in a box is a shortcut for 
+
+template:`<input ngModel [ngModel]="inputValue" (ngModelChange)="inputValue = $event">`
+...
+export class AppCompoenent{
+	inputValue = '';
+}
+
+or
+
+template:`<input ngModel [(ngModel)]="inputValue" >`
+
+----------------
+
+Debugging
+Go to Ctrl+i (source)... there you have your code.
+You can put checkpoints.
+Add the angular dev tools extension
+
+----------
+Components and Templates
+Separation of concerns
+<app-dashboard-item [image]="{ src: 'status.png', alt:'A signal symbol'}" title="A signal symbol">
+title w/o [] is possible because it's a string, alternatively [title]="'blah blah'" 
+
+<ng-content></ng-content> place holder
+
+Attributes selector:
+@Component({
+  selector: 'button[appButton]',
+  standalone: true,
+  imports: [],
+  templateUrl: './button.component.html',
+  styleUrl: './button.component.css'
+})
+This means any element button w/appButton attribute should be controlled by this.
+or selector: 'button.button', means button with class button
+
+ngProjectAs
+<button>
+    <span>
+      <ng-content></ng-content>
+    </span>
+    <ng-content select="icon"></ng-content>
+</button>
+Usage:
+<button appButton>Submit <span ngProjectAs="icon">⌲</span></button>
+
+Fallback:
+<button>
+    <span>
+      <ng-content></ng-content>
+    </span>
+    <ng-content select="icon">⌲</ng-content>
+</button>
+if you remove the projection it will use that
+
+multi-element custom
+<p>
+    <label>{{label()}}</label>
+    <ng-content select="input, textarea"></ng-content>
+</p>
+
+Reminder:
+<div class="container" *ngIf="courses.length; else noCourses">
+  <h1>All Courses</h1>
+  ....
+</div>  
+
+<ng-template #noCourses>
+  <h1>No courses available.</h1>
+</ng-template>
+
+ViewEncapsulation
+
+import { Component, input, ViewEncapsulation } from '@angular/core';
+
+@Component({
+  selector: 'app-control',
+  standalone: true,
+  imports: [],
+  templateUrl: './control.component.html',
+  styleUrl: './control.component.css',
+  encapsulation: ViewEncapsulation.None
+})
+export class ControlComponent {
+  label = input.required<string>()
+}
+None means the CSS will come back to be global
+
+Host elements
+
+Host is the generic component simply decoreted by your markup (selector)
+:host selector is special in css
+is applied directly 
+
+@Component({
+  selector: 'app-control',
+  standalone: true,
+  imports: [],
+  templateUrl: './control.component.html',
+  styleUrl: './control.component.css',
+  encapsulation: ViewEncapsulation.None,
+  host: {
+    class: 'control'
+  }
+})
+
+will add class=ccontrol to app-control
+
+Host Binding
+import { Component, HostBinding, input, ViewEncapsulation } from '@angular/core';
+
+@Component({
+  selector: 'app-control',
+  standalone: true,
+  imports: [],
+  templateUrl: './control.component.html',
+  styleUrl: './control.component.css',
+  encapsulation: ViewEncapsulation.None,
+  // host: {
+  //   class: 'control'
+  // }
+})
+export class ControlComponent {
+  @HostBinding('class') className = 'control';
+  label = input.required<string>()
+}
+//it's now discourage use host property in conf instead
+
+ElementRef
+private el = inject(ElementRef);
+
+  onClick(){
+    console.log('Clicked!');
+    console.log(this.el);
+  }
+ 
+Binding a class
+<div [class.status]="currentStatus === 'online'">
+
+An example
+<p>Last 7 days</p>
+
+      <div id="chart">
+        @for (dataPoint of dummyTrafficData; track dataPoint.id) {
+          <div [style.height]="(dataPoint.value / maxTraffic) * 100 + '%'"></div>
+        }
+      </div>
+
+C:\AutoFormation\Angular-Ultimate\LearningCode\06-cmp-deep-dive\lifecycle-deep-dive-start\lifecycle-deep-dive-start
+
+Execution order (First time)
+1. Constructor
+2. ngOnChanges
+3. ngDoCheck
+4.   ngAfterContentIni     ngAfterViewIni
+5. ngAfterContentChecher   ngAfterViewChecked
+6. <Rendering>
+7. AfterRender
+
+Execution order (Subsequent)
+1. ngOnChanges
+2. neDoCheck
+3. ngAfterContentChecher ngAfterViewChecked
+4. <Rendering>
+5. AfterRender
+
+ngOnChanges whenever the input values change
+ngDoCheck runs a lot of time... don't put code here. Only advanced niche cases
+View is template.
+Content projected. <ng-content> 
+F.ex: 
+
+<h2>The Angular Component Lifecycle</h2>
+<p>A component to demonstrate the Angular component lifecycle Hooks.</p>
+<p>{{ text }}</p>
+<ng-content></ng-content>
+
+OnDestroy is old fashion, replace it by destroyRef
+Check server-status
+
+Template Variables
+#WhatEver
+That's actually a notation
+
+import { Component, ElementRef, HostBinding, HostListener, input, ViewEncapsulation, inject } from '@angular/core';
+
+@Component({
+  selector: 'app-control',
+  standalone: true,
+  imports: [],
+  templateUrl: './control.component.html',
+  styleUrl: './control.component.css',
+  encapsulation: ViewEncapsulation.None,
+  host: {
+    class: 'control',
+    '(click)':'onClick()'
+  }
+})
+export class ControlComponent {
+  //@HostBinding('class') className = 'control'; //it's now discourage use host property in conf instead
+  //@HostListener('click')= onClick(){console.log('Clicked!')}
+  label = input.required<string>()
+
+  private el = inject(ElementRef);
+
+  onClick(){
+    console.log('Clicked!');
+    console.dir(this.el);
+  }
+}
+
+Good example.
+
+Check new-ticket.ts to see # and HTMLInput entries.
+
+Template variables
+
+ContentChild
+As usual you can use old-fashioned
+@ContentChild('input') private control?: ElementRef<HTMLInputElement | HTMLTextAreaElement>;//go where it is used. For example in new-ticket
+
+Or a new version  
+private control = contentChild<ElementRef<HTMLInputElement | HTMLTextAreaElement>>('input')
+
+<form (ngSubmit)="onSubmit(titleInput,request.value)" #form>
+    <app-control label="Title">
+        <input name="title" id="title" #titleInput #input/> <!-- you can use [(ngModel)]-->
+    </app-control>
+    <app-control label="Request">
+        <label>Request</label>
+        <textarea name="request" id="request" rows="3" #request #input></textarea>
+    </app-control>
+    <p>
+        <button appButton>Submit <span ngProjectAs="icon">⌲</span></button>
+    </p>
+</form>
+
+Effects
+
+import { Component, DestroyRef, OnDestroy, OnInit, effect, inject, signal } from '@angular/core';
+
+@Component({
+  selector: 'app-server-status',
+  standalone: true,
+  imports: [],
+  templateUrl: './server-status.component.html',
+  styleUrl: './server-status.component.css'
+})
+export class ServerStatusComponent implements OnInit, OnDestroy{
+  //currentStatus: 'online' | 'offline' | 'unknown' = 'offline';
+  currentStatus = signal<'online' | 'offline' | 'unknown'>('offline');
+  private interval?: ReturnType<typeof setInterval>; //NodeJS.Timeout; <--- sometimes it doesn't work so replace it by ReturnType ...
+
+  private destroyRef = inject(DestroyRef);
+
+  constructor(){
+    effect(()=>{
+      console.log(this.currentStatus());
+    })
+    //it is here because it is not a subscription right away...
+  }
+
+  ngOnInit(): void {
+    // this.interval = setInterval(()=>{
+    //   const rnd = Math.random();
+    //   if (rnd<0.5){
+    //     this.currentStatus = 'online'
+    //   }
+    //   else if (rnd < 0.9){
+    //     this.currentStatus = 'offline'
+    //   }
+    //   else{
+    //     this.currentStatus = 'unknown'
+    //   }
+    // },5000);
+    const interval = setInterval(()=>{
+      const rnd = Math.random();
+      if (rnd<0.5){
+        //this.currentStatus = 'online'
+        this.currentStatus.set('online')
+      }
+      else if (rnd < 0.9){
+        this.currentStatus.set('offline')
+      }
+      else{
+        this.currentStatus.set('unknown');
+      }
+    },5000);
+    this.destroyRef.onDestroy(()=>{
+      clearInterval(interval)
+    })
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.interval);
+  }
+
+ 
+}
+
+<!-- <div [class.status]="currentStatus === 'online'"> --> <!-- 1st method--> 
+<div class="{ 
+                status: true, 
+                'status-online': currentStatus() === 'online',
+                'status-offline': currentStatus() === 'offline',
+                'status-unknown': currentStatus() === 'unknown'
+            }"
+      >
+      @if (currentStatus() === 'online') {
+        <p>Servers are online</p>
+        <p>All systems are operational.</p>
+      } @else if (currentStatus() === 'offline') {
+        <p>Servers are offline</p>
+        <p>Functionality should be restored soon.</p>
+      } @else {
+        <p>Server status is unknown</p>
+        <p>Fetching server status failed.</p>
+      }
+</div>
+<!-- If you ever need:
+ [style.fontSize]="'64px'" -->
+ 
+ Clean up effects example
+ effect((onCleanup) => {
+  const tasks = getTasks();
+  const timer = setTimeout(() => {
+    console.log(`Current number of tasks: ${tasks().length}`);
+  }, 1000);
+  onCleanup(() => {
+    clearTimeout(timer);
+  });
+});
+
+<div>
+    <ul>
+        @for (t of tickets; track t.id){
+            <li>
+                <app-ticket />
+            </li>
+        }
+        @empty{
+            <p>No tickets available</p>
+        }
+    </ul>
+</div>
+
+
+<div id="new-ticket">
+    <app-new-ticket (add) = "onAdd($event)" />
+</div>
+
+Revisiting input - output
+
+<div>
+    <ul>
+        @for (t of tickets; track t.id){
+            <li>
+                <app-ticket /> - {{ $first}} - {{$last}} - {{$even}} -  {{$count}}
+            </li>
+        }
+        @empty{
+            <p>No tickets available</p>
+        }
+    </ul>
+</div>
+
+
+<div id="new-ticket">
+    <app-new-ticket (add) = "onAdd($event)" />
+</div>
+
+
+Check full example of output, update, etc in 
+tickets and ticket
+
+Custom 2-way binding
+/c/AutoFormation/Angular-Ultimate/LearningCode/06-cmp-deep-dive/custom-2w-binding-starting-project/19-custom-2w-binding-starting-project
+
+import { Component,input, output, Input, Output, EventEmitter, model } from '@angular/core';
+
+@Component({
+  selector: 'app-rect',
+  standalone: true,
+  imports: [],
+  templateUrl: './rect.component.html',
+  styleUrl: './rect.component.css',
+})
+export class RectComponent {
+  // Todo: Implement custom two-way binding
+
+  // size = input.required<{ width:string, height:string }>()
+  // sizeChange = output<{ width:string, height:string }>(); //xxxChange is Mandatory
+
+  // @Input({required:true})size!:{width:string, height:string};
+  // @Output()sizeChange = new EventEmitter<{width:string, height:string}>(); //xxxChange is Mandatory
+
+  size = model.required<{width:string, height:string}>();
+
+  onReset() {
+    this.size.set({width:'200', height:'100'})
+    //this.sizeChange.emit({width:'200', height:'100'})
+  }
+}
+
+
+DIRECTIVES
+Enhacements foe elements.
+Directives have no templates.
+In other words: Components are directives w/ templates.
+Check ng-cotent if you have a question.
