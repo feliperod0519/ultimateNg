@@ -729,3 +729,13 @@ export class AuthDirective {
   <p *appAuth="'user'" class="protected-content unauthenticated">Only users should see</p> <!-- also valid -->
 
   <p *appAuth="'guest'" class="protected-content authenticated">Only guest should see</p> <!-- also valid -->
+  
+  Pipes
+  
+  /c/AutoFormation/Angular-Ultimate/LearningCode/08-pipes-deep-dive/starting-project/01-starting-project
+  
+  pure and impure pipes-deep-dive/starting-project/01-starting-project
+  
+  Services and Dependency injections
+  
+  
