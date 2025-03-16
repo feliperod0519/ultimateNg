@@ -622,3 +622,110 @@ Enhacements foe elements.
 Directives have no templates.
 In other words: Components are directives w/ templates.
 Check ng-cotent if you have a question.
+
+C:\AutoFormation\Angular-Ultimate\LearningCode\07-directives-deep-dive\starting-project
+
+Structural v. Attribute directive
+
+Attribute like [(ngModel)] ---> Change the behavior
+Structural like *ngIf --> Change the structure
+
+Custom directives
+safe-link.directive.ts
+
+Injecting host elementref (advances)
+private hostElementRef = inject<ElementRef<HTMLAnchorElement>>(ElementRef);
+
+Full:
+import { Directive, ElementRef, input, inject } from "@angular/core";
+
+
+@Directive({ 
+    selector: 'a[appSafeLink]',
+    standalone: true,
+    host: {
+        '(click)':'onConfirmLeavePage($event)',
+    }
+
+})
+export class SafeLinkDirective{
+    
+    queryParam = input('myapp')
+    private hostElementRef = inject<ElementRef<HTMLAnchorElement>>(ElementRef);
+
+    constructor(){
+        console.log('SafeLink is active')
+    }
+    
+    onConfirmLeavePage(event: MouseEvent){
+        const wantsToLeave = window.open('Do you want to leave?');
+        if (wantsToLeave){
+            // const address = (event.target as HTMLAnchorElement).href;
+            // (event.target as HTMLAnchorElement).href = address + '?from=' + this.queryParam;
+            const address = this.hostElementRef.nativeElement.href;
+            this.hostElementRef.nativeElement.href = address + '?from=' + this.queryParam;
+            return;
+        }
+        event.preventDefault();
+    }
+}
+//Alternatively you can use @HostListener instead of host in config object
+
+Building Custom structural attribute
+
+ng-template content will be eventually rendered. Prepare some markup.
+example:
+
+<main>
+  <app-learning-resources />
+
+  <hr />
+
+  <app-auth />
+
+  <!-- @if (isAdmin()){
+    <p>Only admins should see</p>
+  } -->
+  
+  <!-- <p *ngIf="isAdmin()">Only admins should see</p> -->
+  <ng-template appAuth="admin">
+    <p>Only admins should see</p>
+  </ng-template>
+</main>
+
+TempleteRef and ViewContainerRef
+
+@Directive({
+  selector: '[appAuth]',
+  standalone: true
+})
+export class AuthDirective {
+
+  usetType = input.required<Permission>({alias:'appAuth'});
+  private authService = inject(AuthService);
+  private templateRef = inject(TemplateRef);
+  private viewContainerRef = inject(ViewContainerRef);
+
+  constructor() { 
+    effect(()=>{
+      console.log('su madre',this.usetType())
+      if (this.authService.activePermission()===this.usetType()){
+        console.log('SHOW ELEMENT');
+        this.viewContainerRef.createEmbeddedView(this.templateRef)
+      }
+      else{
+        console.log('DO NOT SHOW ELEMENT');
+        this.viewContainerRef.clear();
+      }
+    })
+  }
+
+}
+
+  <ng-template appAuth="admin">
+    <p class="protected-content admin">Only admins should see</p>
+  </ng-template>
+
+  <p *appAuth="'user'" class="protected-content unauthenticated">Only users should see</p> <!-- also valid -->
+
+  <p *appAuth="'guest'" class="protected-content authenticated">Only guest should see</p> <!-- also valid -->
