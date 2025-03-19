@@ -789,3 +789,164 @@ Check the angular add on on browser. it has an injector feature.
 Change detection
 
 /c/AutoFormation/Angular-Ultimate/LearningCode/10-change-detection/starting-project/01-starting-project
+
+Zone.js notifies Angular about user events, expired timers, etc...
+
+Angular checks all template bindings for changes.
+All components are visited twice.
+If the 1st and 2nd do not coincide, you will get an "ExpressionChangedAfterItHasBeenCheckedError" exception.
+
+ngZone
+
+import { Component, OnInit, signal,inject, NgZone } from '@angular/core';
+
+import { InfoMessageComponent } from '../info-message/info-message.component';
+
+@Component({
+  selector: 'app-counter',
+  standalone: true,
+  templateUrl: './counter.component.html',
+  styleUrl: './counter.component.css',
+  imports: [InfoMessageComponent],
+})
+export class CounterComponent implements OnInit {
+  private zone = inject(NgZone);
+  count = signal(0);
+
+  ngOnInit(): void {
+    setTimeout(()=>{
+      this.count.set(0);
+    },4000);
+
+    //opt-out Zone.js (ng's change detection)
+    this.zone.runOutsideAngular(()=>{
+      setTimeout(()=>{
+        console.log('Timer expired!');
+      },5000);  
+    })
+    // setTimeout(()=>{
+    //   console.log('Timer expired!');
+    // },5000);  
+    //Los 2 timers generan que zone se ejecute 2 veces a pesar que el 2do timer no tiene nada que ver.
+    //ngZone helps to avoid zone pollution
+  }
+
+  //Los 2 timers generan que zone se ejecute 2 veces a pesar que el 2do timer no tiene nada que ver.
+  //ngZone
+
+  get debugOutput() {
+    console.log('[Counter] "debugOutput" binding re-evaluated.');
+    return 'Counter Component Debug Output';
+  }
+
+  onDecrement() {
+    this.count.update((prevCount) => prevCount - 1);
+  }
+
+  onIncrement() {
+    this.count.update((prevCount) => prevCount + 1);
+  }
+}
+
+OnPush Strategy
+
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+
+import { MessagesListComponent } from './messages-list/messages-list.component';
+import { NewMessageComponent } from './new-message/new-message.component';
+
+@Component({
+  selector: 'app-messages',
+  standalone: true,
+  templateUrl: './messages.component.html',
+  styleUrl: './messages.component.css',
+  imports: [MessagesListComponent, NewMessageComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class MessagesComponent {
+  messages = signal<string[]>([]);
+
+  get debugOutput() {
+    console.log('[Messages] "debugOutput" binding re-evaluated.');
+    return 'Messages Component Debug Output';
+  }
+
+  onAddMessage(message: string) {
+    this.messages.update((oldMessages) => [...oldMessages, message]);
+  }
+}
+
+ONPush & Signals
+
+(before | sync)
+---
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class MessagesService {
+  messages$ = new BehaviorSubject<string[]>([]);
+  private messages: string[] = [];
+  get allMessages() {
+    return [...this.messages];
+  }
+
+  addMessage(message: string) {
+    this.messages = [...this.messages, message];
+    this.messages$.next([...this.messages]);
+  }
+}
++++++++++++++++
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  OnInit,
+  inject,
+} from '@angular/core';
+
+import { MessagesService } from '../messages.services'
+
+@Component({
+  selector: 'app-messages-list',
+  standalone: true,
+  templateUrl: './messages-list.component.html',
+  styleUrl: './messages-list.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MessagesListComponent implements OnInit {
+  private messagesService = inject(MessagesService);
+  private cdRef = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
+
+  messages: string[] = [];
+
+  ngOnInit() {
+    const subscription = this.messagesService.messages$.subscribe((messages) => {
+      this.messages = messages;
+      this.cdRef.markForCheck();
+    });
+    this.destroyRef.onDestroy(() => {
+      subscription.unsubscribe();
+    });
+  }
+
+  get debugOutput() {
+    console.log('[MessagesList] "debugOutput" binding re-evaluated.');
+    return 'MessagesList Component Debug Output';
+  }
+}
+++++
+<ul>
+  @for (message of messages; track message) {
+    <li>{{ message }}</li>
+  }
+</ul>
+
+<p class="debug-output">{{ debugOutput }}</p>
+
+OBSERVABLES
+
