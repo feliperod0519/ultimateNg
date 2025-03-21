@@ -1206,3 +1206,205 @@ ngOnInit(): void {
       next: (val) => console.log(val),
       complete: () => console.log('completed!')
     })
+
+
+BackEnd HTTP Requests
+
+/c/AutoFormation/Angular-Ultimate/LearningCode/12-http/starting-project/01-starting-project
+for backend: /c/AutoFormation/Angular-Ultimate/LearningCode/12-http/starting-project/01-starting-project/backend
+
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { catchError, map, throwError, tap } from 'rxjs';
+
+import { Place } from './place.model';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class PlacesService {
+  private httpClient = inject(HttpClient);
+  private userPlaces = signal<Place[]>([]);
+
+  loadedUserPlaces = this.userPlaces.asReadonly();
+
+  loadAvailablePlaces() {
+    return this.fetchPlaces(
+      'http://localhost:3000/places',
+      'Something went wrong fetching the available places. Please try again later.'
+    );
+  }
+
+  loadUserPlaces() {
+    return this.fetchPlaces(
+      'http://localhost:3000/user-places',
+      'Something went wrong fetching your favorite places. Please try again later.'
+    ).pipe(
+      tap({
+        next: (userPlaces) => this.userPlaces.set(userPlaces),
+      })
+    );
+  }
+
+  addPlaceToUserPlaces(place:Place) {
+    this.userPlaces.update(prevplaces => [...prevplaces, place])
+    return this.httpClient.put('http://localhost:3000/user-places', {
+      placeId: place.id,
+    });
+  }
+
+  removeUserPlace(place: Place) {}
+
+  private fetchPlaces(url: string, errorMessage: string) {
+    return this.httpClient.get<{ places: Place[] }>(url).pipe(
+      map((resData) => resData.places),
+      catchError((error) => {
+        console.log(error);
+        return throwError(() => new Error(errorMessage));
+      })
+    );
+  }
+}
+
+You can use subjects or signals as a mechanism of interprocess communication
+
+Optimistic updating
+
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { catchError, map, throwError, tap } from 'rxjs';
+
+import { Place } from './place.model';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class PlacesService {
+  private httpClient = inject(HttpClient);
+  private userPlaces = signal<Place[]>([]);
+
+  loadedUserPlaces = this.userPlaces.asReadonly();
+
+  loadAvailablePlaces() {
+    return this.fetchPlaces(
+      'http://localhost:3000/places',
+      'Something went wrong fetching the available places. Please try again later.'
+    );
+  }
+
+  loadUserPlaces() {
+    return this.fetchPlaces(
+      'http://localhost:3000/user-places',
+      'Something went wrong fetching your favorite places. Please try again later.'
+    ).pipe(
+      tap({
+        next: (userPlaces) => this.userPlaces.set(userPlaces),
+      })
+    );
+  }
+
+  addPlaceToUserPlaces(place: Place) {
+    const prevPlaces = this.userPlaces();
+
+    if (!prevPlaces.some((p) => p.id === place.id)) {
+      this.userPlaces.set([...prevPlaces, place]);
+    }
+
+    return this.httpClient
+      .put('http://localhost:3000/user-places', {
+        placeId: place.id,
+      })
+      .pipe(
+        catchError((error) => {
+          this.userPlaces.set(prevPlaces);
+          return throwError(() => new Error('Failed to store selected place.'));
+        })
+      );
+  }
+
+  removeUserPlace(place: Place) {}
+
+  private fetchPlaces(url: string, errorMessage: string) {
+    return this.httpClient.get<{ places: Place[] }>(url).pipe(
+      map((resData) => resData.places),
+      catchError((error) => {
+        console.log(error);
+        return throwError(() => new Error(errorMessage));
+      })
+    );
+  }
+}
+
+Interceptors
+
+import { bootstrapApplication } from '@angular/platform-browser';
+import { HttpHandler, HttpHandlerFn, HttpRequest, provideHttpClient, withInterceptors } from '@angular/common/http';
+
+import { bootstrapApplication } from '@angular/platform-browser';
+import { HttpEventType, HttpHandler, HttpHandlerFn, HttpRequest, provideHttpClient, withInterceptors } from '@angular/common/http';
+
+import { AppComponent } from './app/app.component';
+import { tap } from 'rxjs';
+
+function loggingInterceptor(request: HttpRequest<unknown>, next: HttpHandlerFn){
+  // const req = request.clone({
+  //   headers.headers.set('X-DEBUG','TESTING')
+  // })
+  
+  console.log('[Outgoing Request]');
+  console.log(request);
+  return next(request).pipe(
+    tap({
+      next: event => {
+        if (event.type === HttpEventType.Response){
+          console.log('[Incoming Response]');
+          console.log(event.status);
+          console.log(event.body);
+        }
+      }
+    })
+  );
+}
+
+
+bootstrapApplication(AppComponent, {
+  providers: [provideHttpClient(withInterceptors([loggingInterceptor]))]
+}).catch((err) => console.error(err));
+
+
+Besides defining HTTP interceptors as functions (which is the modern, recommended way of doing it), you can also define HTTP interceptors via classes.
+
+For example, the loggingInterceptor from the previous lecture could be defined like this (when using this class-based approach):
+
+import {
+  HttpEvent,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+} from '@angular/common/http';
+import { Observable } from 'rxjs';
+ 
+@Injectable()
+class LoggingInterceptor implements HttpInterceptor {
+  intercept(req: HttpRequest<unknown>, handler: HttpHandler): Observable<HttpEvent<any>> {
+    console.log('Request URL: ' + req.url);
+    return handler.handle(req);
+  }
+}
+An interceptor defined like this, must be provided in a different way than before though.
+
+Instead of providing it like this:
+
+providers: [
+  provideHttpClient(
+    withInterceptors([loggingInterceptor]),
+  )
+],
+You now must use withInterceptorsFromDi() and set up a custom provider, like this:
+
+providers: [
+  provideHttpClient(
+    withInterceptorsFromDi()
+  ),
+  { provide: HTTP_INTERCEPTORS, useClass: LoggingInterceptor, multi: true }
+]
