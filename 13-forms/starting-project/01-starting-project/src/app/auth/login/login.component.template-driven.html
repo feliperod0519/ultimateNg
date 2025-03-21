@@ -1,0 +1,44 @@
+<form #myForm="ngForm" (ngSubmit)="onSubmit(myForm)">
+  <h2>Login</h2>
+
+  <div class="control-row">
+    <div class="control no-margin">
+      <label for="email">Email</label>
+      <input id="email" type="email" 
+             name="email" required email 
+             ngModel #email="ngModel" /> <!--[(ngModel)]="email"-->
+    </div>
+
+    <div class="control no-margin">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" 
+            ngModel required minlength="6" #password="ngModel"/>
+    </div>
+
+    <button class="button">Login</button>
+  </div>
+
+  <!-- @if (myForm.form.controls['email'].touched && myForm.form.controls['password'].touched && myForm.form.invalid){
+    <p class="control-error">
+      Invalid values detected. Please check your input.
+    </p>
+  } -->
+  <!-- myForm.form.controls['email'].touched won't work because controls are not yet created  -->
+   <!-- use template variables instead-->
+   @if (email.touched && password.touched && myForm.form.invalid){
+    <p class="control-error">
+      Invalid values detected. Please check your input.
+    </p>
+  }
+  @if (email.touched && email.dirty && email.invalid){
+    <p class="control-error">
+      Invalid email detected. 
+    </p>
+  }
+  @if (password.touched && password.dirty && password.invalid){
+    <p class="control-error">
+      Invalid password detected. 
+    </p>
+  }
+
+</form> 

@@ -1210,7 +1210,7 @@ ngOnInit(): void {
 
 BackEnd HTTP Requests
 
-/c/AutoFormation/Angular-Ultimate/LearningCode/12-http/starting-project/01-starting-project
+/c/AutoFormation/Angular-Ultimate/LearningCode/12-http/starting-project/01-starting-project-End
 for backend: /c/AutoFormation/Angular-Ultimate/LearningCode/12-http/starting-project/01-starting-project/backend
 
 import { Injectable, inject, signal } from '@angular/core';
@@ -1408,3 +1408,128 @@ providers: [
   ),
   { provide: HTTP_INTERCEPTORS, useClass: LoggingInterceptor, multi: true }
 ]
+
+HANDLING FormS
+
+/c/AutoFormation/Angular-Ultimate/LearningCode/13-forms/starting-project/01-starting-project
+
+Template Driven / Reactive FormS
+
+TD: Easy to get started, complex logic can be tricky
+RF: more verbose, complex forms imp is easier.
+
+ngModel w/o 2-way binding
+
+ngModel registers object w/ANG
+
+Template driven:
+
+<form #myForm="ngForm" (ngSubmit)="onSubmit(myForm)">
+  <h2>Login</h2>
+
+  <div class="control-row">
+    <div class="control no-margin">
+      <label for="email">Email</label>
+      <input id="email" type="email" name="email" ngModel />
+    </div>
+
+    <div class="control no-margin">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" ngModel />
+    </div>
+
+    <button class="button">Login</button>
+  </div>
+</form>
+
+import { Component } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
+
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.css',
+  imports: [FormsModule]
+})
+export class LoginComponent {
+
+  onSubmit(form: NgForm){
+    console.log(form);
+  }
+}
+
+<form #myForm="ngForm" (ngSubmit)="onSubmit(myForm)">
+  <h2>Login</h2>
+
+  <div class="control-row">
+    <div class="control no-margin">
+      <label for="email">Email</label>
+      <input id="email" type="email" 
+             name="email" required email 
+             ngModel #email="ngModel" /> <!--[(ngModel)]="email"-->
+    </div>
+
+    <div class="control no-margin">
+      <label for="password">Password</label>
+      <input id="password" type="password" name="password" 
+            ngModel required minlength="6" #password="ngModel"/>
+    </div>
+
+    <button class="button">Login</button>
+  </div>
+
+  <!-- @if (myForm.form.controls['email'].touched && myForm.form.controls['password'].touched && myForm.form.invalid){
+    <p class="control-error">
+      Invalid values detected. Please check your input.
+    </p>
+  } -->
+  <!-- myForm.form.controls['email'].touched won't work because controls are not yet created  -->
+   <!-- use template variables instead-->
+   @if (email.touched && password.touched && myForm.form.invalid){
+    <p class="control-error">
+      Invalid values detected. Please check your input.
+    </p>
+  }
+
+
+</form>
+
+(STYLES)
+.control:has(.ng-invalid.ng-touched.ng-dirty) label {
+  color: #f98b75;
+}
+
+input.ng-invalid.ng-touched.ng-dirty {
+  background-color: #fbdcd6;
+  border-color: #f84e2c;
+}
+
+++++++++
+
+  private form = viewChild.required<NgForm>('myForm');
+  private destroyRef = inject(DestroyRef);
+
+  constructor(){
+    //We are using afternextRender because angular creates the form because is Template driven
+    afterNextRender(()=>{
+      const savedForm = window.localStorage.getItem('saved-login-form');
+      if (savedForm){
+        const loadedFormData = JSON.parse(savedForm);
+        const savedEmail = loadedFormData.email;
+        //this.form().setValue({email:savedEmail,password:''}) //easier way in the next line
+        setTimeout(()=>{this.form().controls['email'].setValue(savedEmail);},1)//setTimeout is workaround
+        
+      }
+      const subscription = this.form().valueChanges?.pipe( debounceTime(500)) //the subscribing funcition will run every 500 ms
+      .subscribe({
+        next: (value) => window.localStorage.setItem('saved-login-form', JSON.stringify({ email: value.email }))
+      });
+      this.destroyRef.onDestroy(()=>subscription?.unsubscribe())
+    });
+    
+  }
+    
+  }
+ 
+ Custom validator for template driven is actually easier
