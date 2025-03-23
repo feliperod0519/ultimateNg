@@ -1,0 +1,45 @@
+section {
+    padding: 0 30px;
+}
+
+section::after {
+        content: '';
+        display: block;
+        clear: both;
+}
+
+section.community {
+    background-color: #cc6633;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    color: #fff;
+}
+
+section.community article {
+    padding: 0 20px 0 515px;
+    background: url(../../../assets/community.jpg) no-repeat 0 5px;
+    min-height: 220px;
+    background-size: 350px 200px;
+}
+
+@media screen and (max-width: 1000px) {
+    section.community article {
+        padding-left: 400px;
+        background-size: 375px auto;
+    }
+}
+
+@media screen and (max-width: 825px) {
+    section.community article {
+        padding-left: 325px;
+        background-size: 300px auto;
+    }
+}
+
+@media screen and (max-width: 625px) {
+    section.community article {
+        padding: 160px 20px 0px 0px;
+        background-size: 300px auto;
+        min-height: initial;
+    }    
+}

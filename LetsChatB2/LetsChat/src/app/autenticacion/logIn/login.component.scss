@@ -1,0 +1,147 @@
+/*
+.login-page {
+    max-width: 350px;
+    margin: 50px auto 0 auto;
+    padding: 10px;
+}
+
+mat-card-title {
+    margin-left: 20px;
+    margin-bottom: 10px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+}
+*/
+/*
+:host {
+    display: flex;
+    justify-content: center;
+    margin: 100px 0px;
+  }
+
+  .mat-form-field {
+    width: 100%;
+    min-width: 300px;
+  }
+
+  mat-card-title,
+  mat-card-content {
+    display: flex;
+    justify-content: center;
+  }
+
+  .error {
+    padding: 16px;
+    width: 300px;
+    color: white;
+    background-color: red;
+  }
+
+  .button {
+    display: flex;
+    justify-content: flex-end;
+  }
+*/
+mat-card {
+  border: black solid 0.4rem;
+  border-radius: 3rem;
+}
+
+.Title-Login {
+  font-weight: 900;
+}
+
+.subtitle-login {
+  font-weight: 600;
+}
+
+.mat-mdc-card {
+  height: 300%;
+}
+
+.mat-mdc-card-header {
+  background-color: rgb(223, 159, 74);
+  border-bottom: black solid 0.1rem;
+  border-radius: 2.5rem 2.5rem 0 0;
+}
+
+.login-form-flex {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300%;
+
+}
+
+.example-full-width {
+  width: 100%;
+}
+
+.mat-mdc-card-actions {
+  border-radius: 0 0 2.5rem 2.5rem;
+  background-color: rgb(223, 200, 84);
+  border-top: black solid 0.1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding-left: 4.5rem;
+
+}
+
+
+.mat-mdc-card-content.mat-mdc-card-content {
+  background-color: antiquewhite;
+  padding: 2rem 2.5rem 2rem 2.5rem;
+  display: grid;
+  align-items: center;
+}
+
+.mat-mdc-button-ripple {
+  border-radius: 3rem;
+  border: black solid 0.1rem;
+
+}
+
+
+.login-button {
+  font-weight: 600;
+  background-color: #f5f5f5;
+  width: 3rem;
+  border-radius: 0.5rem;
+  border: black solid 0.1rem;
+  align-items: end;
+}
+
+.cancel-button {
+  font-weight: 600;
+  background-color: #f5f5f5;
+  width: 3rem;
+  border-radius: 0.5rem;
+  border: black solid 0.1rem;
+  align-items: end;
+}
+
+.login-button:hover {
+  background-color: #0ac065;
+  scale: 1.05;
+  transition-duration: 0.5s;
+}
+
+.cancel-button:hover {
+  background-color: #0ac065;
+  scale: 1.05;
+  transition-duration: 0.5s;
+}
+
+.mat-mdc-input-element {
+  margin-bottom: 0.7rem;
+}
+
+.example-header-image {
+  background-image: url('../../../assets/Minou.jpg');
+  background-size: cover;
+}

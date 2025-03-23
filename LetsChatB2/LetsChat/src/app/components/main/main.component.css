@@ -1,0 +1,76 @@
+section {
+    padding: 0 30px;
+}
+
+section::after {
+        content: '';
+        display: block;
+        clear: both;
+}
+
+section.main {
+    margin-top: 20px;
+    margin-bottom: 30px;
+    padding: 0;
+}
+
+section.main aside {
+    width: 33%;
+    float: left;
+    text-align: center;
+}
+
+section.main .content {
+    margin: 15px;
+    background: no-repeat center top;
+    background-size: 75px 75px;
+    padding-top: 85px;
+}
+
+section.main aside h3 a {
+    color: #000;
+    text-decoration: none;
+}
+
+section.main aside h3 a:hover {
+    text-decoration: underline;
+}
+
+section.main aside .content.trending {
+    background-image: url(../../../assets/icon_star.svg);
+}
+
+section.main aside .content.find-it {
+    background-image: url(../../../assets/icon_marker.svg);
+}
+
+section.main aside .content.tools {
+    background-image: url(../../../assets/icon_gear.svg);
+}
+
+@media screen and (max-width: 760px) {
+    section.main {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    section.main aside div.content {
+        background-size: 55px 55px;
+        padding-top: 60px;
+    }
+}
+
+@media screen and (max-width: 625px) {
+    section.main aside {
+        width: 100%;
+        float: none;
+        text-align: left;
+    }
+
+    section.main aside div.content {
+        margin: 8px 20px 8px 0;
+        padding: 5px 0px 10px 85px;
+        background-size: 50px 50px;
+        background-position: 20px 5px;
+    }
+}
