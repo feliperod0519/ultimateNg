@@ -1533,3 +1533,432 @@ input.ng-invalid.ng-touched.ng-dirty {
   }
  
  Custom validator for template driven is actually easier
+ 
+ROUTING
+
+/c/AutoFormation/Angular-Ultimate/LearningCode/14-routing/starting-project/01-starting-project
+
+/c/AutoFormation/Angular-Ultimate/LearningCode/14-routing/starting-project-fix
+
+ANG = SPA
+but ang allows client-side routing
+/user ---> UserComponent
+/shop ---> ShopComponent
+
+dynamic parameters
+
+{
+      path: 'users/:userId', //your-domain/users/<uid>
+      component: UserTasksComponent
+    }
+
+import { Component, input } from '@angular/core';
+
+@Component({
+  selector: 'app-user-tasks',
+  standalone: true,
+  templateUrl: './user-tasks.component.html',
+  styleUrl: './user-tasks.component.css',
+})
+export class UserTasksComponent {
+  userId = input.required<string>()
+}
+
+import { ApplicationConfig } from "@angular/core";
+import { provideRouter, withComponentInputBinding } from "@angular/router";
+
+import { routes } from './app.routes';
+
+export const appConfig: ApplicationConfig = {
+    providers: [ provideRouter(routes, withComponentInputBinding()) ]
+}
+
+In case you want to do it old-fashioned
+@Input({required: true}) userId!: string;
+to run some computed code
+@Input()
+set userId(uid: string) {
+  console.log(uid);
+}
+
+alternative way of using input parameters:
+
+import { Component, inject, input, computed, OnInit, DestroyRef } from '@angular/core';
+import { UsersService } from '../users.service';
+import { ActivatedRoute } from '@angular/router';
+
+@Component({
+  selector: 'app-user-tasks',
+  standalone: true,
+  templateUrl: './user-tasks.component.html',
+  styleUrl: './user-tasks.component.css',
+})
+export class UserTasksComponent implements OnInit {
+  userId = input.required<string>()
+  private usersService = inject(UsersService);
+  //alternative way
+  private activatedRoute = inject(ActivatedRoute)
+
+  userName = computed(()=> this.usersService.users.find(u=>u.id === this.userId())?.name)
+  userName2? = ''
+
+  private destroyRef = inject(DestroyRef);
+
+  ngOnInit(): void {
+    console.log(this.activatedRoute);
+    const subscription = this.activatedRoute.paramMap.subscribe({
+      next: (paramMap) => {
+        this.userName2 = this.usersService.users.find((u)=>u.id === paramMap.get('userId'))?.name || '';
+      } 
+    });
+    this.destroyRef.onDestroy(()=>subscription.unsubscribe());
+  }
+}
+
+Nested Routes
+
+export const routes: Routes = [
+  {
+    path: '', // <your-domain>/
+    component: NoTaskComponent,
+    // redirectTo: '/users/u1',
+    // pathMatch: 'full'
+  },
+  {
+    path: 'users/:userId', // <your-domain>/users/<uid>
+    component: UserTasksComponent,
+    children: [
+      {
+        path: '',
+        redirectTo: 'tasks',
+        pathMatch: 'full'
+      },
+      {
+        path: 'tasks', // <your-domain>/users/<uid>/tasks
+        component: TasksComponent,
+      },
+      {
+        path: 'tasks/new',
+        component: NewTaskComponent,
+      },
+    ],
+  },
+  {
+    path: '**',
+    component: NotFoundComponent,
+  },
+];
+
+
+go one level
+<a routerLink="../">Cancel</a>
+
+programmatic navigation
+private router = inject(Router);
+
+Spliting files
+
+ActivatedRoute vs Snapshot
+
+ngOnInit(): void {
+    console.log('snapshot',this.activatedRoute.snapshot);
+    console.log('activated route', this.activatedRoute.paramMap);
+    //The difference is the activatedRoute produces subjects while snapshot produces values
+    //snapshot is used when you are 100% sure it won't need re-execution
+    const subscription = this.activatedRoute.paramMap.subscribe({
+      next: (paramMap) => {
+        this.userName =
+          this.usersService.users.find((u) => u.id === paramMap.get('userId'))
+            ?.name || '';
+      },
+    });
+
+    this.destroyRef.onDestroy(() => subscription.unsubscribe());
+  }
+  
+Query parameters
+
+import { Component, computed, DestroyRef, inject, input, OnInit } from '@angular/core';
+
+import { TaskComponent } from './task/task.component';
+import { Task } from './task/task.model';
+import { TasksService } from './tasks.service';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+
+@Component({
+  selector: 'app-tasks',
+  standalone: true,
+  templateUrl: './tasks.component.html',
+  styleUrl: './tasks.component.css',
+  imports: [TaskComponent, RouterLink],
+})
+export class TasksComponent implements OnInit {
+  userId = input.required<string>();
+  order = input<'asc'|'desc'>(); //same name of query parameter
+  private tasksService = inject(TasksService);
+  userTasks = computed(() =>
+    this.tasksService.allTasks().filter((task) => task.userId === this.userId()).sort((a,b)=>{
+      if (this.order() === 'desc')
+        return a.id>b.id?-1:1;
+      else{
+        return a.id>b.id?1:-1;
+      }
+    })
+  );
+
+  //alternative way
+  private activatedRoute = inject(ActivatedRoute)
+  orderOld?: 'asc' | 'desc';
+  private destroyRef = inject(DestroyRef)
+
+  ngOnInit(): void {
+    const subscription = this.activatedRoute.queryParams.subscribe({
+      next: params=> this.orderOld = params['order']
+    });
+    this.destroyRef.onDestroy(()=>{ subscription.unsubscribe()})
+  }
+}
+
+Adding static data
+
+{
+    path: 'users/:userId', // <your-domain>/users/<uid>
+    component: UserTasksComponent,
+    data: { message: 'Hello'},
+    children: userRoutes
+    // [
+    //   {
+    //     path: '',
+    //     redirectTo: 'tasks',
+    //     pathMatch: 'full'
+    //   },
+    //   {
+    //     path: 'tasks', // <your-domain>/users/<uid>/tasks
+    //     component: TasksComponent,
+    //   },
+    //   {
+    //     path: 'tasks/new',
+    //     component: NewTaskComponent,
+    //   },
+    // ],
+  },
+ 
+Resolve (somewhat like data but dynamic) (Leaner components)
+
+{
+    path: 'users/:userId', // <your-domain>/users/<uid>
+    component: UserTasksComponent,
+    data: { message: 'Hello'},
+    resolve : {
+      //add a function resolver
+      userNameResolve: resolveUserName
+    },
+    children: userRoutes
+    // [
+    //   {
+    //     path: '',
+    //     redirectTo: 'tasks',
+    //     pathMatch: 'full'
+    //   },
+    //   {
+    //     path: 'tasks', // <your-domain>/users/<uid>/tasks
+    //     component: TasksComponent,
+    //   },
+    //   {
+    //     path: 'tasks/new',
+    //     component: NewTaskComponent,
+    //   },
+    // ],
+  },
+
+import {
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  input,
+} from '@angular/core';
+import { ActivatedRoute, ActivatedRouteSnapshot, ResolveFn, RouterLink, RouterOutlet, RouterStateSnapshot } from '@angular/router';
+
+import { UsersService } from '../users.service';
+
+@Component({
+  selector: 'app-user-tasks',
+  standalone: true,
+  imports: [RouterOutlet, RouterLink],
+  templateUrl: './user-tasks.component.html',
+  styleUrl: './user-tasks.component.css',
+})
+export class UserTasksComponent implements OnInit {
+  // userId = input.required<string>();
+  userName = '';
+  private usersService = inject(UsersService);
+  private activatedRoute = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
+
+  message = input.required<string>();
+
+  userNameResolve = input.required<string>();
+
+  // userName = computed(
+  //   () => this.usersService.users.find((u) => u.id === this.userId())?.name
+  // );
+
+  ngOnInit(): void {
+    console.log('snapshot',this.activatedRoute.snapshot);
+    console.log('activated route', this.activatedRoute.paramMap);
+    console.log('Input data',this.message())
+    //The difference is the activatedRoute produces subjects while snapshot produces values
+    //snapshot is used when you are 100% sure it won't need re-execution
+    const subscription = this.activatedRoute.paramMap.subscribe({
+      next: (paramMap) => {
+        this.userName =
+          this.usersService.users.find((u) => u.id === paramMap.get('userId'))
+            ?.name || '';
+      },
+    });
+
+    this.destroyRef.onDestroy(() => subscription.unsubscribe());
+  }
+}
+
+export const resolveUserName : ResolveFn<string> = (activatedRoute: ActivatedRouteSnapshot, routerState: RouterStateSnapshot)=>{
+  const usersService = inject(UsersService);
+  const userName = usersService.users.find((u)=>u.id === activatedRoute.paramMap.get('userId'))?.name || ''
+  return userName;
+}
+
+Alternatively,
+
+@Injectable({ providedIn: 'root' })
+export class UserNameResolver implements Resolve<string> {
+  constructor(private usersService: UsersService) {}
+  resolve(activatedRoute: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+    const userName =
+      this.usersService.users.find(
+        (u) => u.id === activatedRoute.paramMap.get('userId')
+      )?.name || '';
+    return userName;
+  }
+}
+
+{
+  path: 'users/:userId', // <your-domain>/users/<uid>
+  component: UserTasksComponent,
+  children: userRoutes,
+  data: {
+    message: 'Hello!',
+  },
+  resolve: {
+    userName: UserNameResolver,
+  },
+}
+
+Resolve title
+
+{
+    path: 'users/:userId', // <your-domain>/users/<uid>
+    component: UserTasksComponent,
+    data: { message: 'Hello'},
+    resolve : {
+      //add a function resolver
+      userNameResolve: resolveUserName
+    },
+    children: userRoutes,
+    title: resolveTitle
+
+export const resolveUserName : ResolveFn<string> = (activatedRoute: ActivatedRouteSnapshot, routerState: RouterStateSnapshot)=>{
+  const usersService = inject(UsersService);
+  const userName = usersService.users.find((u)=>u.id === activatedRoute.paramMap.get('userId'))?.name || ''
+  return userName;
+}
+
+export const resolveTitle: ResolveFn<string> = (activatedRoute: ActivatedRouteSnapshot, routerState: RouterStateSnapshot)=>{
+  return resolveUserName(activatedRoute,routerState) + '\'s tasks'
+}
+
+Route Guards
+
+canMatch is more modern
+canActivate is more traditional.
+
+const dummyCanMatch: CanMatchFn = (route, segments) => {
+  const router = inject(Router)
+  const shouldGetAccess = Math.random()
+  if (shouldGetAccess < 0.5){
+    return true;
+  }
+  return new RedirectCommand(router.parseUrl('/unauthorized'))
+}
+
+export const routes: Routes = [
+  {
+    path: '', // <your-domain>/
+    component: NoTaskComponent,
+    // redirectTo: '/users/u1',
+    // pathMatch: 'full',
+    title: 'No tasks selected'
+  },
+  {
+    path: 'users/:userId', // <your-domain>/users/<uid>
+    component: UserTasksComponent,
+    data: { message: 'Hello'},
+    resolve : {
+      //add a function resolver
+      userNameResolve: resolveUserName
+    },
+    children: userRoutes,
+    title: resolveTitle,
+    canMatch: [dummyCanMatch]
+....
+
+Older(deprecaded way)
+
+@Injectable({ providedIn: 'root' })
+class CanMatchTeamSection implements CanMatch {
+  constructor(private router: Router) {}
+  canMatch(route: Route, segments: UrlSegment[]) {
+    const shouldGetAccess = Math.random();
+    if (shouldGetAccess < 0.5) {
+      return true;
+    }
+    return new RedirectCommand(this.router.parseUrl('/unauthorized'));
+  }
+}
+....
+
+{
+  path: 'users/:userId', // <your-domain>/users/<uid>
+  component: UserTasksComponent,
+  children: userRoutes,
+  canMatch: [CanMatchTeamSection],
+  data: {
+    message: 'Hello!',
+  },
+  resolve: {
+    userName: resolveUserName,
+  },
+  title: resolveTitle,
+},
+
+Deactivate
+
+{
+      path: 'tasks/new',
+      component: NewTaskComponent,
+      canDeactivate: [canLeaveEditPage]
+    },
+	
+export const canLeaveEditPage: CanDeactivateFn<NewTaskComponent> = (component) => {
+  if (component.enteredTitle() || component.enteredDate() || component.enteredSummary()){
+    window.confirm('Do you really want to leave, yo will lose entered data')
+  }
+  return true;
+}	
+
+VERSION FINALIZADA CON MODULOS
+
+C:\AutoFormation\Angular-Ultimate\LearningCode\14-routing\18-using-ngmodules
+
+LAZY LOADING
