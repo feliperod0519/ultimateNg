@@ -2117,14 +2117,70 @@ C:\AutoFormation\Angular-Ultimate\LearningCode\15-lazy-loading\deferrable-views-
   <p>We might have an offer...</p>
 }
 
-DEPLOYMENT
-
-
-
-....
-
 @defer(on interaction; prefetch on hover) {
   <app-offer-preview />
 } @placeholder {
   <p class="fallback">We might have an offer...</p>
 }
+
+DEPLOYMENT
+
+ng serve (generates no right code no optimezed)
+(it's only for development not for deployment)
+
+>npm run build
+equivalent
+>ng build 
+
+Creates /dist/routing/browser folder
+Output location: C:\AutoFormation\Angular-Ultimate\LearningCode\16-deployment\starting-project\01-starting-project\dist\routing
+
+Options
+1.SPA (Single Page App means client side application) (single.html)
+Therefore we don't need any dynamic server (no node.js or php)
+Disadvantages: Rendering takes a while.
+How to deploy:
+https://firebase.google.com/
+
+Create project (ng-deployment-example
+Creer/Hosting
+>npm install -g firebase-tools
+>firebase login
+Already logged in as feliperod0519@gmail.com
+>firebase init
+? What do you want to use as your public directory? dist/routing/browser
+? Configure as a single-page app (rewrite all urls to /index.html)? (y/N) y
+
+>npm run build
+Check firebase.json for errors such as empty spaces
+>firebase deploy
+
+Hosting URL: https://ng-deployment-example-64686.web.app
+
+angular cli for deployment
+
+Option 2. SSR Server Side Rendering
+Best of both worlds
+routes are rendered on-demand on a dynamic server
+Becomes SPA after initial rendering
+
+>ng add @angular/ssr
+
+After creation check server.ts (node.js server)
+>ng run build
+ Now you will find dist/routing/browser and dist/routing/server
+ 
+ To test 
+ >npm run serve:ssr:routing
+ 
+if localstorage errors:
+constructor() {
+    afterNextRender(()=>{
+      const tasks = localStorage.getItem('tasks');
+
+      if (tasks) {
+        this.tasks.set(JSON.parse(tasks));
+      }
+    })
+    
+  }
