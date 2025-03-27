@@ -1,0 +1,12 @@
+@if(loading()){
+    <div>
+        Loading...
+    </div>
+}
+@if(!loading()){
+    <table>
+        @for (p of places(); track p.id){
+            <tr><td>{{p.title}}</td></tr>
+        }    
+    </table>
+}
